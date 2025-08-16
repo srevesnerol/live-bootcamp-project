@@ -1,3 +1,15 @@
+## Git Commit format
+[Sprint 1][Task 1] fix: add correct Docker Hub username to compose.yml 
+
+#### Git Commit message setup
+https://www.conventionalcommits.org/en/v1.0.0/
+
+## Github Workflows
+https://docs.github.com/en/actions/concepts/workflows-and-actions/workflows
+
+## Docker Compose Docs
+https://docs.docker.com/compose/
+
 ## Setup & Building
 ```bash
 cargo install cargo-watch
