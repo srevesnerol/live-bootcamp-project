@@ -11,6 +11,12 @@ adding to readme test
 ## Docker Compose Docs
 https://docs.docker.com/compose/
 
+## SSH into Digital Ocean Droplet
+1. Install doctl (if you haven't already)
+2. Create a personal access token (if you haven't already)
+3. Run `doctl auth init` -> use personal access token to sign in 
+4. Run `doctl compute ssh <droplet-id>` (Droplet ID can be pulled from url)
+
 ## Setup & Building
 ```bash
 cargo install cargo-watch
