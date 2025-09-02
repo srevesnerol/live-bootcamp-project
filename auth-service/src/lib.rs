@@ -9,7 +9,6 @@ use axum::{
     Json, Router,
 };
 use domain::AuthAPIError;
-use routes::{login, logout, signup, verify_2fa, verify_token};
 use serde::{Deserialize, Serialize};
 use tower_http::services::ServeDir;
 
@@ -25,7 +24,6 @@ pub struct Application {
 
 impl Application {
     pub async fn build(app_state: AppState, address: &str) -> Result<Self, Box<dyn Error>> {
-
         let router = Router::new()
             .nest_service("/", ServeDir::new("assets"))
             .route("/verify-token", post(routes::verify_token))
