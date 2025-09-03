@@ -17,6 +17,20 @@ async fn should_return_422_if_malformed_credentials() {
 }
 
 #[tokio::test]
+async fn should_return_401_if_incorrect_credentials() {
+    let app = TestApp::new().await;
+
+    let body = serde_json::json!({
+        "email": "bob@bob.com",
+        "password": "passwordABC"
+    });
+
+    let response = app.post_login(&body).await;
+
+    assert_eq!(response.status().as_u16(), 401);
+}
+
+#[tokio::test]
 async fn should_return_400_if_invalid_input() {
     let app = TestApp::new().await;
 
