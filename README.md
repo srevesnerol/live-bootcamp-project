@@ -38,10 +38,14 @@ cargo watch -q -c -w src/ -w assets/ -w templates/ -x run
 visit http://localhost:8000
 
 #### Auth service
+## Run servers locally (Docker)
 ```bash
+./docker.sh
+```
+<!-- ```bash
 cd auth-service
 cargo watch -q -c -w src/ -w assets/ -x run
-```
+``` -->
 
 visit http://localhost:3000
 
