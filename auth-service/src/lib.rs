@@ -76,6 +76,7 @@ impl IntoResponse for AuthAPIError {
             AuthAPIError::IncorrectCredentials => (StatusCode::UNAUTHORIZED, "Unauthorized"),
             AuthAPIError::MissingToken => (StatusCode::BAD_REQUEST, "Missing Token"),
             AuthAPIError::InvalidToken => (StatusCode::UNAUTHORIZED, "Unauthorized Token"),
+            AuthAPIError::MalformedToken => (StatusCode::UNPROCESSABLE_ENTITY, "Malformed Token"),
         };
         let body = Json(ErrorResponse {
             error: error_message.to_string(),
