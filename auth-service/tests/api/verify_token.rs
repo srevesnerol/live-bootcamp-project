@@ -55,6 +55,22 @@ async fn should_return_401_if_invalid_token() {
 }
 
 #[tokio::test]
+async fn should_return_401_if_banned_token() {
+    let app = TestApp::new().await;
+
+    let banned_request = json!({
+        "token": "banned_token"
+    });
+    {
+        let mut banned_store = app.banned_token_store.write().await;
+        banned_store.add_token("banned_token".to_string()).await.unwrap();
+    }
+
+    let output = app.post_verify_token(&banned_request).await;
+    assert_eq!(output.status().as_u16(), 401)
+}
+
+#[tokio::test]
 async fn should_return_422_if_malformed_input() {
     let app = TestApp::new().await;
 

@@ -73,9 +73,9 @@ impl IntoResponse for AuthAPIError {
             AuthAPIError::UnexpectedError => {
                 (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error")
             }
-            AuthAPIError::IncorrectCredentials => (StatusCode::UNAUTHORIZED, "Unauthorized"),
-            AuthAPIError::MissingToken => (StatusCode::BAD_REQUEST, "Missing Token"),
-            AuthAPIError::InvalidToken => (StatusCode::UNAUTHORIZED, "Unauthorized Token"),
+            AuthAPIError::IncorrectCredentials => (StatusCode::UNAUTHORIZED, "Incorrect credentials"),
+            AuthAPIError::MissingToken => (StatusCode::BAD_REQUEST, "Missing auth token"),
+            AuthAPIError::InvalidToken => (StatusCode::UNAUTHORIZED, "Invalid auth token"),
             AuthAPIError::MalformedToken => (StatusCode::UNPROCESSABLE_ENTITY, "Malformed Token"),
         };
         let body = Json(ErrorResponse {
