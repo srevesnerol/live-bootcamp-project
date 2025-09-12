@@ -40,11 +40,62 @@ pub async fn login(
 
     let updated_jar = jar.add(auth_cookie);
 
-    (updated_jar, Ok(StatusCode::OK.into_response()))
+    match user.requires_2fa {
+        true => handle_2fa(updated_jar.clone()).await,
+        false => handle_no_2fa(&user.email, updated_jar.clone()).await,
+    }
+}
+
+async fn handle_2fa(
+    jar: CookieJar,
+) -> (
+    CookieJar,
+    Result<(StatusCode, Json<LoginResponse>), AuthAPIError>,
+) {
+
+    let login_attempt_id = "123456".to_string();
+
+    let response = TwoFactorAuthResponse {
+        message: "2FA required".to_string(),
+        login_attempt_id,
+    };
+
+    (jar, Ok((StatusCode::PARTIAL_CONTENT, axum::Json(LoginResponse::TwoFactorAuth(response)))))
+}
+
+async fn handle_no_2fa(
+    email: &Email,
+    jar: CookieJar,
+) -> (
+    CookieJar,
+    Result<(StatusCode, Json<LoginResponse>), AuthAPIError>,
+) {
+    (jar, Ok((StatusCode::OK, axum::Json(LoginResponse::RegularAuth))))
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct LoginRequest {
     email: String,
     password: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TwoFAResponse {
+    message: String,
+    #[serde(rename = "loginAttemptId")]
+    login_attempt_id: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(untagged)]
+pub enum LoginResponse {
+    RegularAuth,
+    TwoFactorAuth(TwoFactorAuthResponse),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TwoFactorAuthResponse {
+    pub message: String,
+    #[serde(rename = "loginAttemptId")]
+    pub login_attempt_id: String,
 }

@@ -1,4 +1,4 @@
-use auth_service::{utils::constants::JWT_COOKIE_NAME, ErrorResponse};
+use auth_service::{utils::constants::JWT_COOKIE_NAME};
 use crate::helpers::{get_random_email, TestApp};
 
 use serde_json::json;
@@ -16,7 +16,7 @@ async fn should_return_200_valid_token() {
         "requires2FA": false
     });
     
-    let response = app.post_signup(&signup_body).await;
+    let _response = app.post_signup(&signup_body).await;
     
     let login_body = json!({
         "email": random_email,
