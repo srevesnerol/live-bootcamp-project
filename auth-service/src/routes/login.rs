@@ -1,6 +1,6 @@
 use crate::{
     app_state::AppState,
-    domain::{AuthAPIError, Email, Password},
+    domain::{AuthAPIError, Email, LoginAttemptId, Password, TwoFACode},
     utils::auth::generate_auth_cookie,
 };
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
@@ -41,26 +41,36 @@ pub async fn login(
     let updated_jar = jar.add(auth_cookie);
 
     match user.requires_2fa {
-        true => handle_2fa(updated_jar.clone()).await,
+        true => handle_2fa(&user.email, &state, updated_jar.clone()).await,
         false => handle_no_2fa(&user.email, updated_jar.clone()).await,
     }
 }
 
 async fn handle_2fa(
+    email: &Email,
+    state: &AppState,
     jar: CookieJar,
 ) -> (
     CookieJar,
     Result<(StatusCode, Json<LoginResponse>), AuthAPIError>,
 ) {
+    let login_attempt_id = LoginAttemptId::default();
+    let two_fa_code = TwoFACode::default();
 
-    let login_attempt_id = "123456".to_string();
+    let mut two_fa_code_store = state.two_fa_code_store.write().await;
+    if let Err(_) = two_fa_code_store
+        .add_code(email.clone(), login_attempt_id.clone(), two_fa_code.clone())
+        .await
+    {
+        return (jar, Err(AuthAPIError::UnexpectedError));
+    }
 
-    let response = TwoFactorAuthResponse {
-        message: "2FA required".to_string(),
-        login_attempt_id,
-    };
+    let response = Json(LoginResponse::TwoFactorAuth(TwoFactorAuthResponse {
+        message: "2FA required".to_owned(),
+        login_attempt_id: login_attempt_id.as_ref().to_string(),
+    }));
 
-    (jar, Ok((StatusCode::PARTIAL_CONTENT, axum::Json(LoginResponse::TwoFactorAuth(response)))))
+    (jar, Ok((StatusCode::PARTIAL_CONTENT, response)))
 }
 
 async fn handle_no_2fa(
@@ -70,7 +80,10 @@ async fn handle_no_2fa(
     CookieJar,
     Result<(StatusCode, Json<LoginResponse>), AuthAPIError>,
 ) {
-    (jar, Ok((StatusCode::OK, axum::Json(LoginResponse::RegularAuth))))
+    (
+        jar,
+        Ok((StatusCode::OK, axum::Json(LoginResponse::RegularAuth))),
+    )
 }
 
 #[derive(Serialize, Deserialize)]
