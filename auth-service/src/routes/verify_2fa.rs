@@ -12,7 +12,7 @@ pub async fn verify_2fa(
     jar: CookieJar,
     Json(request): Json<Verify2FARequest>,
 ) -> (CookieJar, Result<impl IntoResponse, AuthAPIError>) {
-    let two_fa_code_store = state.two_fa_code_store.write().await;
+    let mut two_fa_code_store = state.two_fa_code_store.write().await;
 
     let email = match Email::parse(request.email.clone()) {
         Ok(email) => email,
@@ -47,6 +47,11 @@ pub async fn verify_2fa(
     };
 
     let updated_jar = jar.add(auth_cookie);
+
+    let _ = match two_fa_code_store.remove_code(&email).await {
+        Ok(_) => (),
+        Err(_) => return (updated_jar, Err(AuthAPIError::UnexpectedError)),
+    };
 
     (updated_jar, Ok(StatusCode::OK.into_response()))
 }
