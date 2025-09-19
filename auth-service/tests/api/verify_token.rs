@@ -39,7 +39,8 @@ async fn should_return_200_valid_token() {
     });
 
     let output = app.post_verify_token(&valid_request).await;
-    assert_eq!(output.status().as_u16(), 200)
+    assert_eq!(output.status().as_u16(), 200);
+    app.cleanup().await;
 }
 
 #[tokio::test]
@@ -51,7 +52,8 @@ async fn should_return_401_if_invalid_token() {
     });
 
     let output = app.post_verify_token(&invalid_request).await;
-    assert_eq!(output.status().as_u16(), 401)
+    assert_eq!(output.status().as_u16(), 401);
+    app.cleanup().await;
 }
 
 #[tokio::test]
@@ -67,7 +69,8 @@ async fn should_return_401_if_banned_token() {
     }
 
     let output = app.post_verify_token(&banned_request).await;
-    assert_eq!(output.status().as_u16(), 401)
+    assert_eq!(output.status().as_u16(), 401);
+    app.cleanup().await;
 }
 
 #[tokio::test]
@@ -80,5 +83,6 @@ async fn should_return_422_if_malformed_input() {
     });
 
     let output = app.post_verify_token(&malformed_request).await;
-    assert_eq!(output.status().as_u16(), 422)
+    assert_eq!(output.status().as_u16(), 422);
+    app.cleanup().await;
 }

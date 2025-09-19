@@ -29,6 +29,7 @@ async fn should_return_201_if_valid_input() {
             .expect("Could not deserialize response body to UserBody"),
         expected_response
     );
+    app.cleanup().await;
 }
 
 #[tokio::test]
@@ -78,6 +79,7 @@ async fn should_return_400_if_invalid_input() {
             "Invalid credentials".to_owned()
         );
     }
+    app.cleanup().await;
 }
 
 #[tokio::test]
@@ -108,6 +110,7 @@ async fn should_return_409_if_email_already_exists() {
             .error,
         "User already exists".to_owned()
     );
+    app.cleanup().await;
 }
 
 #[tokio::test]
@@ -143,4 +146,5 @@ async fn should_return_422_if_malformed_input() {
             test_case
         );
     }
+    app.cleanup().await;
 }

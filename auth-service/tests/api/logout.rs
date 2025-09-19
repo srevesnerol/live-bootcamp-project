@@ -29,6 +29,7 @@ async fn should_return_400_if_jwt_cookie_missing() {
             .error,
         "Missing auth token".to_owned()
     );
+    app.cleanup().await;
 }
 
 #[tokio::test]
@@ -62,6 +63,7 @@ async fn should_return_401_if_invalid_token() {
             .error,
         "Invalid auth token".to_owned()
     );
+    app.cleanup().await;
 }
 
 #[tokio::test]
@@ -109,13 +111,17 @@ async fn should_return_200_if_valid_jwt_cookie() {
 
     assert!(auth_cookie.value().is_empty());
 
-    let banned_token_store = app.banned_token_store.read().await;
-    let contains_token = banned_token_store
-        .contains_token(token)
-        .await
-        .expect("Failed to check if token is banned");
+    {
+        let banned_token_store = app.banned_token_store.read().await;
+        let contains_token = banned_token_store
+            .contains_token(token)
+            .await
+            .expect("Failed to check if token is banned");
+    
+        assert!(contains_token);
+    }
 
-    assert!(contains_token);
+    app.cleanup().await;
 }
 
 #[tokio::test]
@@ -171,4 +177,5 @@ async fn should_return_400_if_logout_called_twice_in_a_row() {
             .error,
         "Missing auth token".to_owned()
     );
+    app.cleanup().await;
 }
