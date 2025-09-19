@@ -7,6 +7,7 @@ pub use data_stores::{
     hashset_banned_token_store,
     mock_email_client,
     postgres_user_store,
+    redis_banned_token_store,
 };
 
 

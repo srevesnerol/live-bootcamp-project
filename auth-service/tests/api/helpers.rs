@@ -36,11 +36,10 @@ impl Drop for TestApp {
 
 impl TestApp {
     pub async fn new() -> Self {
-        let db_name = Uuid::new_v4().to_string();
 
-        let pg_pool = configure_postgresql(&db_name).await;
+        let pg_pool = configure_postgresql().await;
 
-        let user_store = Arc::new(RwLock::new(PostgresUserStore::new(pg_pool)));
+        let user_store = Arc::new(RwLock::new(PostgresUserStore::new(pg_pool.1)));
         let banned_token_store = Arc::new(RwLock::new(HashsetBannedTokenStore::default()));
         let two_fa_code_store = Arc::new(RwLock::new(HashmapTwoFACodeStore::default()));
         let email_client: EmailClientType = Arc::new(MockEmailClient {});
@@ -66,6 +65,8 @@ impl TestApp {
             .cookie_provider(cookie_jar.clone())
             .build()
             .unwrap();
+
+        let db_name = pg_pool.0;
 
         Self {
             address,
@@ -161,20 +162,22 @@ pub fn get_random_email() -> String {
     format!("{}@example.com", Uuid::new_v4())
 }
 
-async fn configure_postgresql(db_name: &str) -> PgPool {
+async fn configure_postgresql() -> (String, PgPool) {
+    let db_name = Uuid::new_v4().to_string();
     let postgresql_conn_url = DATABASE_URL.to_owned();
 
     // We are creating a new database for each test case, and we need to ensure each database has a unique name!
-    let db_name = db_name.to_string();
 
     configure_database(&postgresql_conn_url, &db_name).await;
 
     let postgresql_conn_url_with_db = format!("{}/{}", postgresql_conn_url, db_name);
 
     // Create a new connection pool and return it
-    get_postgres_pool(&postgresql_conn_url_with_db)
+    let pg_pool = get_postgres_pool(&postgresql_conn_url_with_db)
         .await
-        .expect("Failed to create Postgres connection pool!")
+        .expect("Failed to create Postgres connection pool!");
+
+    (db_name, pg_pool)
 }
 
 async fn configure_database(db_conn_string: &str, db_name: &str) {

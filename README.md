@@ -56,3 +56,20 @@ docker compose up
 ```
 
 visit http://localhost:8000 and http://localhost:3000
+
+## If issues running locally
+
+# 1. Stop and remove all containers, volumes, and networks
+```
+docker compose down -v --remove-orphans
+```
+
+# 2. Remove all images (optional but ensures completely clean rebuild)
+```
+docker compose down --rmi all
+```
+
+# 3. Clean up any dangling images/containers
+```
+docker system prune -f
+```
