@@ -1,12 +1,12 @@
 use auth_service::{
     app_state::{AppState, BannedTokenStoreType, EmailClientType, TwoFACodeStoreType},
-    get_postgres_pool,
+    get_postgres_pool, get_redis_client,
     services::{
-        hashmap_two_fa_code_store::HashmapTwoFACodeStore,
         hashset_banned_token_store::HashsetBannedTokenStore, mock_email_client::MockEmailClient,
         postgres_user_store::PostgresUserStore,
+        redis_two_fa_code_store::RedisTwoFACodeStore,
     },
-    utils::constants::{test, DATABASE_URL},
+    utils::constants::{test, DATABASE_URL, REDIS_HOST_NAME},
     Application,
 };
 use reqwest::cookie::Jar;
@@ -41,7 +41,7 @@ impl TestApp {
 
         let user_store = Arc::new(RwLock::new(PostgresUserStore::new(pg_pool.1)));
         let banned_token_store = Arc::new(RwLock::new(HashsetBannedTokenStore::default()));
-        let two_fa_code_store = Arc::new(RwLock::new(HashmapTwoFACodeStore::default()));
+        let two_fa_code_store = Arc::new(RwLock::new(RedisTwoFACodeStore::new(Arc::new(RwLock::new(configure_redis())))));
         let email_client: EmailClientType = Arc::new(MockEmailClient {});
 
         let app_state = AppState::new(
@@ -156,6 +156,13 @@ impl TestApp {
         delete_database(&self.db_name).await;
         self.clean_up_called = true;
     }
+}
+
+fn configure_redis() -> redis::Connection {
+    get_redis_client(REDIS_HOST_NAME.to_owned())
+        .expect("Failed to get Redis client")
+        .get_connection()
+        .expect("Failed to get Redis connection")
 }
 
 pub fn get_random_email() -> String {

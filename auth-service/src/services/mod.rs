@@ -8,6 +8,7 @@ pub use data_stores::{
     mock_email_client,
     postgres_user_store,
     redis_banned_token_store,
+    redis_two_fa_code_store,
 };
 
 
